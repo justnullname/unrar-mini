@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Minimal Core decoding files for QuickView
-# Stripped of legacy OS checks, multi-threading, and non-essential features.
 set(UNRAR_SOURCES
     archive.cpp
     arcread.cpp
@@ -64,9 +63,18 @@ else()
 endif()
 
 # Find and link Google Highway for multi-platform SIMD support
-# Supports SSE, AVX, NEON, RVV via dynamic dispatch
-find_package(hwy CONFIG REQUIRED)
-target_link_libraries(unrar-mini PUBLIC hwy::hwy)
+# In sub-project mode, we expect hwy::hwy to be provided by the parent.
+if(NOT TARGET hwy::hwy)
+    find_package(hwy CONFIG QUIET)
+endif()
+
+if(TARGET hwy::hwy)
+    message(STATUS "unrar-mini: Google Highway SIMD enabled.")
+    target_link_libraries(unrar-mini PUBLIC hwy::hwy)
+    target_compile_definitions(unrar-mini PUBLIC UNRAR_SIMD_HWY)
+else()
+    message(WARNING "unrar-mini: Google Highway NOT found. SIMD optimizations disabled.")
+endif()
 
 # Set common optimization flags for standalone build
 if(MSVC)
