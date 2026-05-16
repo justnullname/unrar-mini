@@ -311,17 +311,17 @@ byte Unpack::DecodeAudio(int Delta)
   // so we cast it to unsigned to follow the standard.
   D=(uint)D<<3;
 
-  V->Dif[0]+=abs(D);
-  V->Dif[1]+=abs(D-V->D1);
-  V->Dif[2]+=abs(D+V->D1);
-  V->Dif[3]+=abs(D-V->D2);
-  V->Dif[4]+=abs(D+V->D2);
-  V->Dif[5]+=abs(D-V->D3);
-  V->Dif[6]+=abs(D+V->D3);
-  V->Dif[7]+=abs(D-V->D4);
-  V->Dif[8]+=abs(D+V->D4);
-  V->Dif[9]+=abs(D-UnpChannelDelta);
-  V->Dif[10]+=abs(D+UnpChannelDelta);
+  V->Dif[0]+=UnpAbs(D);
+  V->Dif[1]+=UnpAbs(D-V->D1);
+  V->Dif[2]+=UnpAbs(D+V->D1);
+  V->Dif[3]+=UnpAbs(D-V->D2);
+  V->Dif[4]+=UnpAbs(D+V->D2);
+  V->Dif[5]+=UnpAbs(D-V->D3);
+  V->Dif[6]+=UnpAbs(D+V->D3);
+  V->Dif[7]+=UnpAbs(D-V->D4);
+  V->Dif[8]+=UnpAbs(D+V->D4);
+  V->Dif[9]+=UnpAbs(D-UnpChannelDelta);
+  V->Dif[10]+=UnpAbs(D+UnpChannelDelta);
 
   UnpChannelDelta=V->LastDelta=(signed char)(Ch-V->LastChar);
   V->LastChar=Ch;

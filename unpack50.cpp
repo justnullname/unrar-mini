@@ -277,7 +277,7 @@ bool Unpack::UnpReadBuf()
   {
     // We may need to quit from main extraction loop and read new block header
     // and trees earlier than data in input buffer ends.
-    ReadBorder=Min(ReadBorder,BlockHeader.BlockStart+BlockHeader.BlockSize-1);
+    ReadBorder=UnpMin(ReadBorder,BlockHeader.BlockStart+BlockHeader.BlockSize-1);
   }
   return ReadCode > 0;
 }
@@ -416,7 +416,7 @@ void Unpack::UnpWriteBuf()
   // We prefer to write data in blocks not exceeding UNPACK_MAX_WRITE
   // instead of potentially huge MaxWinSize blocks. It also allows us
   // to keep the size of Filters array reasonable.
-  WriteBorder=WrapUp(UnpPtr+Min(MaxWinSize,UNPACK_MAX_WRITE));
+  WriteBorder=WrapUp(UnpPtr+UnpMin(MaxWinSize,UNPACK_MAX_WRITE));
 
   // Choose the nearest among WriteBorder and WrPtr actual written border.
   // If border is equal to UnpPtr, it means that we have MaxWinSize data ahead.
@@ -607,7 +607,7 @@ bool Unpack::ReadBlockHeader(BitInput &inp,UnpackBlockHeader &Header)
 
   // We called Inp.faddbits(8) above, thus Header.BlockStart can't be 0 here.
   // So there is no overflow even if Header.BlockSize is 0.
-  ReadBorder=Min(ReadBorder,Header.BlockStart+Header.BlockSize-1);
+  ReadBorder=UnpMin(ReadBorder,Header.BlockStart+Header.BlockSize-1);
 
   Header.LastBlockInFile=(BlockFlags & 0x40)!=0;
   Header.TablePresent=(BlockFlags & 0x80)!=0;

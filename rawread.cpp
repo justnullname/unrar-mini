@@ -151,7 +151,7 @@ uint RawRead::GetVSize(size_t Pos)
 size_t RawRead::GetB(void *Field,size_t Size)
 {
   byte *F=(byte *)Field;
-  size_t CopySize=Min(DataSize-ReadPos,Size);
+  size_t CopySize=UnpMin(DataSize-ReadPos,Size);
   if (CopySize>0)
     memcpy(F,&Data[ReadPos],CopySize);
   if (Size>CopySize)

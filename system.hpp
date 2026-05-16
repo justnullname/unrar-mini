@@ -22,7 +22,7 @@ bool IsWindows11OrGreater();
 #ifdef _WIN_ALL
 bool SetPrivilege(LPCTSTR PrivName);
 HMODULE WINAPI LoadSysLibrary(const wchar *Name);
-bool IsUserAdmin();
+bool IsUserAdUnpMin();
 #endif
 
 #ifdef USE_SSE

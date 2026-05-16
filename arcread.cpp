@@ -338,7 +338,7 @@ size_t Archive::ReadHeader15()
         if (hd->UnknownUnpSize)
           hd->UnpSize=INT64NDF;
 
-        size_t ReadNameSize=Min(NameSize,MAXPATHSIZE);
+        size_t ReadNameSize=UnpMin(NameSize,MAXPATHSIZE);
         std::string NameData(ReadNameSize,0);
         Raw.GetB((byte *)&NameData[0],ReadNameSize);
 
@@ -804,7 +804,7 @@ size_t Archive::ReadHeader50()
         if (hd->UnknownUnpSize)
           hd->UnpSize=INT64NDF;
 
-        hd->MaxSize=Max(hd->PackSize,hd->UnpSize);
+        hd->MaxSize=UnpMax(hd->PackSize,hd->UnpSize);
         hd->FileAttr=(uint)Raw.GetV();
         if ((hd->FileFlags & FHFL_UTIME)!=0)
           hd->mtime.SetUnix((time_t)Raw.Get4());
@@ -868,7 +868,7 @@ size_t Archive::ReadHeader50()
           }
         }
 
-        size_t ReadNameSize=Min(NameSize,MAXPATHSIZE);
+        size_t ReadNameSize=UnpMin(NameSize,MAXPATHSIZE);
         std::string name_utf8(ReadNameSize,0);
         Raw.GetB((byte *)&name_utf8[0],ReadNameSize);
 
@@ -1183,14 +1183,14 @@ void Archive::ProcessExtra50(RawRead *Raw,size_t ExtraSize,const BaseBlock *bb)
             if ((Flags & FHEXTRA_UOWNER_UNAME)!=0)
             {
               size_t Length=(size_t)Raw->GetV();
-              Length=Min(Length,ASIZE(hd->UnixOwnerName)-1);
+              Length=UnpMin(Length,ASIZE(hd->UnixOwnerName)-1);
               Raw->GetB(hd->UnixOwnerName,Length);
               hd->UnixOwnerName[Length]=0;
             }
             if ((Flags & FHEXTRA_UOWNER_GNAME)!=0)
             {
               size_t Length=(size_t)Raw->GetV();
-              Length=Min(Length,ASIZE(hd->UnixGroupName)-1);
+              Length=UnpMin(Length,ASIZE(hd->UnixGroupName)-1);
               Raw->GetB(hd->UnixGroupName,Length);
               hd->UnixGroupName[Length]=0;
             }

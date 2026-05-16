@@ -364,7 +364,7 @@ bool Unpack::ReadVMCodePPM()
 bool Unpack::AddVMCode(uint FirstByte,byte *Code,uint CodeSize)
 {
   VMCodeInp.InitBitInput();
-  memcpy(VMCodeInp.InBuf,Code,Min(BitInput::MAX_SIZE,CodeSize));
+  memcpy(VMCodeInp.InBuf,Code,UnpMin(BitInput::MAX_SIZE,CodeSize));
   VM.Init();
 
   uint FiltPos;

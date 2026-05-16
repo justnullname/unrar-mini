@@ -4,9 +4,6 @@
 #include "suballoc.cpp"
 #include "model.cpp"
 #include "unpackinline.cpp"
-#ifdef RAR_SMP
-#include "unpack50mt.cpp"
-#endif
 #ifndef SFX_MODULE
 #include "unpack15.cpp"
 #include "unpack20.cpp"
@@ -24,12 +21,6 @@ Unpack::Unpack(ComprDataIO *DataIO)
   Suspended=false;
   UnpSomeRead=false;
   ExtraDist=false;
-#ifdef RAR_SMP
-  MaxUserThreads=1;
-  UnpThreadPool=NULL;
-  ReadBufMT=NULL;
-  UnpThreadData=NULL;
-#endif
   AllocWinSize=0;
   MaxWinSize=0;
   MaxWinMask=0;
@@ -53,23 +44,9 @@ Unpack::~Unpack()
 #endif
 
   Alloc.delete_l<byte>(Window); // delete Window;
-#ifdef RAR_SMP
-  delete UnpThreadPool;
-  delete[] ReadBufMT;
-  delete[] UnpThreadData;
-#endif
 }
 
 
-#ifdef RAR_SMP
-void Unpack::SetThreads(uint Threads)
-{
-  // More than 8 threads are unlikely to provide noticeable gain
-  // for unpacking, but would use the additional memory.
-  MaxUserThreads=Min(Threads,8);
-  UnpThreadPool=new ThreadPool(MaxUserThreads);
-}
-#endif
 
 
 // We get 64-bit WinSize, so we still can check and quit for dictionaries
@@ -86,7 +63,7 @@ void Unpack::Init(uint64 WinSize,bool Solid)
   if (WinSize<MinAllocSize)
     WinSize=MinAllocSize;
 
-  if (WinSize>Min(0x10000000000ULL,UNPACK_MAX_DICT)) // Window size must not exceed 1 TB.
+  if (WinSize>UnpMin(0x10000000000ULL,UNPACK_MAX_DICT)) // Window size must not exceed 1 TB.
     return;
 
   // 32-bit build can't unpack dictionaries exceeding 32-bit even in theory.
@@ -176,21 +153,6 @@ void Unpack::DoUnpack(uint Method,bool Solid)
     case VER_PACK5: // 50. RAR 5.0 and 7.0 compression algorithms.
     case VER_PACK7: // 70.
       ExtraDist=(Method==VER_PACK7);
-#ifdef RAR_SMP
-      if (MaxUserThreads>1)
-      {
-//      We do not use the multithreaded unpack routine to repack RAR archives
-//      in 'suspended' mode, because unlike the single threaded code it can
-//      write more than one dictionary for same loop pass. So we would need
-//      larger buffers of unknown size. Also we do not support multithreading
-//      in fragmented window mode.
-          if (!Fragmented)
-          {
-            Unpack5MT(Solid);
-            break;
-          }
-      }
-#endif
       Unpack5(Solid);
       break;
   }
@@ -213,7 +175,7 @@ void Unpack::UnpInitData(bool Solid)
     UnpPtr=WrPtr=0;
     PrevPtr=0;
     FirstWinDone=false;
-    WriteBorder=Min(MaxWinSize,UNPACK_MAX_WRITE);
+    WriteBorder=UnpMin(MaxWinSize,UNPACK_MAX_WRITE);
   }
   // Filters never share several solid files, so we can safely reset them
   // even in solid archive.

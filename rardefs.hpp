@@ -1,11 +1,11 @@
 #ifndef _RAR_DEFS_
 #define _RAR_DEFS_
 
-#define  Min(x,y) (((x)<(y)) ? (x):(y))
-#define  Max(x,y) (((x)>(y)) ? (x):(y))
+#define  UnpMin(x,y) (((x)<(y)) ? (x):(y))
+#define  UnpMax(x,y) (((x)>(y)) ? (x):(y))
 
 // Universal replacement of abs function.
-#define  Abs(x) (((x)<0) ? -(x):(x))
+#define  UnpAbs(x) (((x)<0) ? -(x):(x))
 
 #define  ASIZE(x) (sizeof(x)/sizeof(x[0]))
 

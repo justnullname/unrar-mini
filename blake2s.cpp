@@ -16,9 +16,7 @@ static const byte blake2s_sigma[10][16] =
   { 10,  2,  8,  4,  7,  6,  1,  5, 15, 11,  9, 14,  3, 12, 13 , 0 } ,
 };
 
-#ifdef USE_SSE
-#include "blake2s_sse.cpp"
-#endif
+#undef USE_SSE
 
 static void blake2s_init_param( blake2s_state *S, uint32 node_offset, uint32 node_depth);
 static void blake2s_update( blake2s_state *S, const byte *in, size_t inlen );

@@ -5,7 +5,7 @@
  *  Contents: memory allocation routines                                    *
  ****************************************************************************/
 
-static const uint UNIT_SIZE=Max(sizeof(RARPPM_CONTEXT),sizeof(RARPPM_MEM_BLK));
+static const uint UNIT_SIZE=UnpMax(sizeof(RARPPM_CONTEXT),sizeof(RARPPM_MEM_BLK));
 static const uint FIXED_UNIT_SIZE=12;
 
 SubAllocator::SubAllocator()

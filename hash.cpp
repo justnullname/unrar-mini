@@ -76,7 +76,7 @@ void DataHash::Init(HASH_TYPE Type,[[maybe_unused]] uint MaxThreads)
   if (Type==HASH_BLAKE2)
     blake2sp_init(blake2ctx);
 #ifdef RAR_SMP
-  DataHash::MaxThreads=Min(MaxThreads,HASH_POOL_THREADS);
+  DataHash::MaxThreads=UnpMin(MaxThreads,HASH_POOL_THREADS);
 #endif
 }
 

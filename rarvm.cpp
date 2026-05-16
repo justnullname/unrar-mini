@@ -5,16 +5,13 @@
 // ============================================================================
 #if defined(_M_X64) || defined(__x86_64__)
 #include <hwy/detect_targets.h>
-// x64: Force SSE4 baseline, AVX2 mainstream, AVX-512 (AVX3/DL/ZEN4)
 #undef HWY_BASELINE_TARGETS
 #define HWY_BASELINE_TARGETS (HWY_SSE4)
 #undef HWY_TARGETS
 #define HWY_TARGETS (HWY_SSE4 | HWY_AVX2 | HWY_AVX3 | HWY_AVX3_ZEN4)
 #elif defined(_M_ARM64) || defined(__aarch64__)
-// ARM64: Native NEON
 #define HWY_TARGETS (HWY_NEON)
 #else
-// Unknown architecture: scalar fallback
 #define HWY_TARGETS HWY_SCALAR
 #endif
 
@@ -72,9 +69,9 @@ void RGBFilterSIMD(byte* Mem, uint DataSize, uint Width, uint Channels)
       byte UpperLeftByte = I >= Width ? DestData[I - Width + Channels] : 0;
       
       int Predicted = PrevByte + UpperByte - UpperLeftByte;
-      int pa = abs((int)(Predicted - PrevByte));
-      int pb = abs((int)(Predicted - UpperByte));
-      int pc = abs((int)(Predicted - UpperLeftByte));
+      int pa = UnpAbs((int)(Predicted - PrevByte));
+      int pb = UnpAbs((int)(Predicted - UpperByte));
+      int pc = UnpAbs((int)(Predicted - UpperLeftByte));
       
       if (pa <= pb && pa <= pc)
         Predicted = PrevByte;
@@ -114,12 +111,10 @@ RarVM::RarVM()
   Mem=NULL;
 }
 
-
 RarVM::~RarVM()
 {
   delete[] Mem;
 }
-
 
 void RarVM::Init()
 {
@@ -127,6 +122,30 @@ void RarVM::Init()
     Mem=new byte[VM_MEMSIZE + 4];
 }
 
+void RarVM::Prepare(byte *Code,uint CodeSize,VM_PreparedProgram *Prg)
+{
+  // Minimal implementation for preview engine
+  Prg->Type = VMSF_NONE;
+  if (CodeSize >= 4) {
+      // Simplified detection logic or full VM implementation here
+  }
+}
+
+void RarVM::Execute(VM_PreparedProgram *Prg)
+{
+  if (Prg->Type != VMSF_NONE)
+      ExecuteStandardFilter(Prg->Type);
+}
+
+void RarVM::SetMemory(size_t Pos,byte *Data,size_t DataSize)
+{
+  if (Pos<VM_MEMSIZE && Data!=Mem+Pos)
+  {
+    size_t CopySize=UnpMin(DataSize,VM_MEMSIZE-Pos);
+    if (CopySize!=0)
+      memmove(Mem+Pos,Data,CopySize);
+  }
+}
 
 bool RarVM::ExecuteStandardFilter(VM_StandardFilters Filter)
 {
@@ -241,5 +260,33 @@ bool RarVM::ExecuteStandardFilter(VM_StandardFilters Filter)
       return false;
   }
   return true;
+}
+
+uint RarVM::ReadData(BitInput &Inp)
+{
+  uint Data=Inp.fgetbits();
+  switch(Data & 0xc000)
+  {
+    case 0:
+      Inp.faddbits(1);
+      return (Data>>14) & 0x03;
+    case 0x4000:
+      Inp.faddbits(2);
+      Data=Inp.fgetbits();
+      Inp.faddbits(4);
+      return (Data>>12) & 0x0f;
+    case 0x8000:
+      Inp.faddbits(2);
+      Data=Inp.fgetbits();
+      Inp.faddbits(16);
+      return Data;
+    default:
+      Inp.faddbits(2);
+      Data=(Inp.fgetbits()<<16);
+      Inp.faddbits(16);
+      Data|=Inp.fgetbits();
+      Inp.faddbits(16);
+      return Data;
+  }
 }
 #endif

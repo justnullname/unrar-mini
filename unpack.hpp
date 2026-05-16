@@ -10,7 +10,6 @@
 #include "model.hpp"
 #include "rarvm.hpp"
 #include "largepage.hpp"
-#include "threadpool.hpp"
 
 // Maximum allowed number of compressed bits processed in quick mode.
 #define MAX_QUICK_DECODE_BITS       9
@@ -241,16 +240,6 @@ class Unpack:PackDef
     ComprDataIO *UnpIO;
     BitInput Inp;
 
-#ifdef RAR_SMP
-    void InitMT();
-    bool UnpackLargeBlock(UnpackThreadData &D);
-    bool ProcessDecoded(UnpackThreadData &D);
-
-    ThreadPool *UnpThreadPool;
-    UnpackThreadData *UnpThreadData;
-    uint MaxUserThreads;
-    byte *ReadBufMT;
-#endif
 
     LargePageAlloc Alloc;
 

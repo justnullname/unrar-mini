@@ -188,10 +188,10 @@ bool WideToCharMap(const wchar *Src,char *Dest,size_t DestSize,bool &Success)
       SrcPos++;
       memset(&ps,0,sizeof(ps));
       int Length=mbrlen(Dest+DestPos,MB_CUR_MAX,&ps);
-      DestPos+=Max(Length,1);
+      DestPos+=UnpMax(Length,1);
     }
   }
-  Dest[Min(DestPos,DestSize-1)]=0;
+  Dest[UnpMin(DestPos,DestSize-1)]=0;
   return true;
 }
 #endif
@@ -240,11 +240,11 @@ void CharToWideMap(const char *Src,wchar *Dest,size_t DestSize,bool &Success)
     {
       memset(&ps,0,sizeof(ps));
       int Length=mbrlen(Src+SrcPos,MB_CUR_MAX,&ps);
-      SrcPos+=Max(Length,1);
+      SrcPos+=UnpMax(Length,1);
       DestPos++;
     }
   }
-  Dest[Min(DestPos,DestSize-1)]=0;
+  Dest[UnpMin(DestPos,DestSize-1)]=0;
 }
 #endif
 
@@ -720,10 +720,10 @@ int wcsnicomp(const wchar *s1,const wchar *s2,size_t n)
   // If we specify 'n' exceeding the actual string length, CompareString goes
   // beyond the trailing zero and compares garbage. So we need to limit 'n'
   // to real string length.
-  size_t sl1=wcslen(s1); // Pre-compute to not call wcslen() in Min() twice.
-  size_t l1=Min(sl1+1,n);
-  size_t sl2=wcslen(s2); // Pre-compute to not call wcslen() in Min() twice.
-  size_t l2=Min(sl2+1,n);
+  size_t sl1=wcslen(s1); // Pre-compute to not call wcslen() in UnpMin() twice.
+  size_t l1=UnpMin(sl1+1,n);
+  size_t sl2=wcslen(s2); // Pre-compute to not call wcslen() in UnpMin() twice.
+  size_t l2=UnpMin(sl2+1,n);
   return CompareStringW(LOCALE_USER_DEFAULT,NORM_IGNORECASE|SORT_STRINGSORT,s1,(int)l1,s2,(int)l2)-2;
 #else
   if (n==0)

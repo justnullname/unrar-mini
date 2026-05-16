@@ -881,7 +881,7 @@ static void GenArcName(std::wstring &ArcName,const std::wstring &GenerateMask,ui
       // in this function.
       if (NCount<Digits)
         Mask.insert(I,Digits-NCount,L'N');
-      I+=Max(Digits,NCount)-1;
+      I+=UnpMax(Digits,NCount)-1;
       ArcNumPresent=true;
       continue;
     }
