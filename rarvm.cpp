@@ -1,5 +1,23 @@
 #include "rar.hpp"
 
+// ============================================================================
+// Instruction Set Consistency with QuickView Main Project
+// ============================================================================
+#if defined(_M_X64) || defined(__x86_64__)
+#include <hwy/detect_targets.h>
+// x64: Force SSE4 baseline, AVX2 mainstream, AVX-512 (AVX3/DL/ZEN4)
+#undef HWY_BASELINE_TARGETS
+#define HWY_BASELINE_TARGETS (HWY_SSE4)
+#undef HWY_TARGETS
+#define HWY_TARGETS (HWY_SSE4 | HWY_AVX2 | HWY_AVX3 | HWY_AVX3_ZEN4)
+#elif defined(_M_ARM64) || defined(__aarch64__)
+// ARM64: Native NEON
+#define HWY_TARGETS (HWY_NEON)
+#else
+// Unknown architecture: scalar fallback
+#define HWY_TARGETS HWY_SCALAR
+#endif
+
 #undef HWY_TARGET_INCLUDE
 #define HWY_TARGET_INCLUDE "rarvm.cpp"
 #include "hwy/foreach_target.h"  // IWYU pragma: keep
@@ -43,8 +61,6 @@ void DeltaFilterSIMD(byte* Mem, uint DataSize, uint Channels, uint Border, uint 
 // Optimized RGB Paeth-like filter
 void RGBFilterSIMD(byte* Mem, uint DataSize, uint Width, uint Channels)
 {
-  // RGB Filter in UnRAR is 3-channel Paeth predictor.
-  // Vectorizing Paeth is hard, but we can optimize the core math.
   byte *SrcData = Mem, *DestData = Mem + DataSize;
   
   for (uint CurChannel = 0; CurChannel < Channels; CurChannel++)
