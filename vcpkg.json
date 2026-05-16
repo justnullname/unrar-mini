@@ -1,0 +1,8 @@
+{
+  "name": "unrar-mini",
+  "version-string": "1.0.0",
+  "description": "Modernized, sanitized, and minimal UnRAR extraction core with Google Highway SIMD support.",
+  "dependencies": [
+    "highway"
+  ]
+}

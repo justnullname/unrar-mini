@@ -1,0 +1,29 @@
+# Build directories
+build/
+out/
+bin/
+lib/
+
+# IDE files
+.vs/
+.vscode/
+*.swp
+*.swo
+*.user
+*.suo
+
+# Dependency managers
+vcpkg_installed/
+vcpkg_downloads/
+
+# Temporary files
+*.obj
+*.o
+*.lib
+*.a
+*.pdb
+*.ilk
+*.exe
+
+# Log files
+*.log
