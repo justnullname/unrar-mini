@@ -279,7 +279,10 @@ bool Unpack::UnpReadBuf()
     // and trees earlier than data in input buffer ends.
     ReadBorder=UnpMin(ReadBorder,BlockHeader.BlockStart+BlockHeader.BlockSize-1);
   }
-  return ReadCode > 0;
+  // ReadCode==0 means EOF (no more data). If the buffer also has no remaining data (DataSize == 0),
+  // we must return false to avoid infinite decoding loops. Only return true if we read new data
+  // or still have buffered data to process.
+  return ReadCode > 0 || (ReadCode == 0 && DataSize > 0);
 }
 
 

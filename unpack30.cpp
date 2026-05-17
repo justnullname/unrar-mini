@@ -473,7 +473,7 @@ bool Unpack::AddVMCode(uint FirstByte,byte *Code,uint CodeSize)
   if (NewFilter)
   {
     uint VMCodeSize=RarVM::ReadData(VMCodeInp);
-    if (VMCodeSize>=0x10000 || VMCodeSize==0 || VMCodeInp.InAddr+VMCodeSize>CodeSize)
+    if (VMCodeSize>=0x10000 || VMCodeInp.InAddr+VMCodeSize>CodeSize)
       return false;
     std::vector<byte> VMCode(VMCodeSize);
     for (uint I=0;I<VMCodeSize;I++)
@@ -515,7 +515,7 @@ bool Unpack::UnpReadBuf30()
   if (ReadCode>0)
     ReadTop+=ReadCode;
   ReadBorder=ReadTop-30;
-  return ReadCode > 0;
+  return ReadCode > 0 || (ReadCode == 0 && DataSize > 0);
 }
 
 

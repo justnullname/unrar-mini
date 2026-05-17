@@ -127,17 +127,50 @@ void RarVM::Init()
 
 void RarVM::Prepare(byte *Code,uint CodeSize,VM_PreparedProgram *Prg)
 {
-  // Minimal implementation for preview engine
-  Prg->Type = VMSF_NONE;
-  if (CodeSize >= 4) {
-      // Simplified detection logic or full VM implementation here
-  }
+  // Calculate the single byte XOR checksum to check validity of VM code.
+  byte XorSum=0;
+  for (uint I=1;I<CodeSize;I++)
+    XorSum^=Code[I];
+
+  if (XorSum!=Code[0])
+    return;
+
+  struct StandardFilters
+  {
+    uint Length;
+    uint CRC;
+    VM_StandardFilters Type;
+  } static StdList[]={
+    53, 0xad576887, VMSF_E8,
+    57, 0x3cd7e57e, VMSF_E8E9,
+   120, 0x3769893f, VMSF_ITANIUM,
+    29, 0x0e06077d, VMSF_DELTA,
+   149, 0x1c2c5dc8, VMSF_RGB,
+   216, 0xbc85e701, VMSF_AUDIO
+  };
+  uint CodeCRC=CRC32(0xffffffff,Code,CodeSize)^0xffffffff;
+  for (uint I=0;I<ASIZE(StdList);I++)
+    if (StdList[I].CRC==CodeCRC && StdList[I].Length==CodeSize)
+    {
+      Prg->Type=StdList[I].Type;
+      break;
+    }
 }
 
 void RarVM::Execute(VM_PreparedProgram *Prg)
 {
-  if (Prg->Type != VMSF_NONE)
-      ExecuteStandardFilter(Prg->Type);
+  memcpy(R,Prg->InitR,sizeof(Prg->InitR));
+  Prg->FilteredData=NULL;
+  if (Prg->Type!=VMSF_NONE)
+  {
+    bool Success=ExecuteStandardFilter(Prg->Type);
+    uint BlockSize=Prg->InitR[4] & VM_MEMMASK;
+    Prg->FilteredDataSize=BlockSize;
+    if (Prg->Type==VMSF_DELTA || Prg->Type==VMSF_RGB || Prg->Type==VMSF_AUDIO)
+      Prg->FilteredData=2*BlockSize>VM_MEMSIZE || !Success ? Mem:Mem+BlockSize;
+    else
+      Prg->FilteredData=Mem;
+  }
 }
 
 void RarVM::SetMemory(size_t Pos,byte *Data,size_t DataSize)
@@ -268,16 +301,23 @@ bool RarVM::ExecuteStandardFilter(VM_StandardFilters Filter)
 uint RarVM::ReadData(BitInput &Inp)
 {
   uint Data=Inp.fgetbits();
-  switch(Data & 0xc000)
+  switch(Data&0xc000)
   {
     case 0:
-      Inp.faddbits(1);
-      return (Data>>14) & 0x03;
+      Inp.faddbits(6);
+      return (Data>>10)&0xf;
     case 0x4000:
-      Inp.faddbits(2);
-      Data=Inp.fgetbits();
-      Inp.faddbits(4);
-      return (Data>>12) & 0x0f;
+      if ((Data&0x3c00)==0)
+      {
+        Data=0xffffff00|((Data>>2)&0xff);
+        Inp.faddbits(14);
+      }
+      else
+      {
+        Data=(Data>>6)&0xff;
+        Inp.faddbits(10);
+      }
+      return Data;
     case 0x8000:
       Inp.faddbits(2);
       Data=Inp.fgetbits();

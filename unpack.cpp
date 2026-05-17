@@ -130,9 +130,6 @@ void Unpack::Init(uint64 WinSize,bool Solid)
 
 void Unpack::DoUnpack(uint Method,bool Solid)
 {
-  // Methods <50 will crash in Fragmented mode when accessing NULL Window.
-  // They cannot be called in such mode now, but we check it below anyway
-  // just for extra safety.
   switch(Method)
   {
 #ifndef SFX_MODULE
